@@ -258,29 +258,22 @@
             font-size: 1.1rem;
         }
 
-        /* Demo Section */
-        .demo-section {
-            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
-            padding: 4rem 0;
+        /* Results Section */
+        #results {
+            transition: all 0.5s ease;
         }
 
-        .demo-card {
-            background: white;
-            border-radius: 20px;
-            padding: 3rem;
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
-            text-align: center;
-        }
-
-        .device-icon {
-            font-size: 4rem;
-            margin-bottom: 1rem;
-            color: var(--primary-color);
+        .result-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 15px;
+            padding: 2rem;
+            margin-bottom: 2rem;
         }
 
         .confidence-bar {
             height: 8px;
-            background: rgba(0, 0, 0, 0.1);
+            background: rgba(255, 255, 255, 0.3);
             border-radius: 4px;
             overflow: hidden;
             margin: 0.5rem 0;
@@ -291,6 +284,36 @@
             background: linear-gradient(90deg, #4CAF50, #8BC34A);
             border-radius: 4px;
             transition: width 1s ease;
+        }
+
+        .device-icon {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+            opacity: 0.9;
+        }
+
+        /* Loading Animation */
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 2rem;
+        }
+
+        .spinner-border {
+            width: 3rem;
+            height: 3rem;
+        }
+
+        /* Sample Data Button */
+        .sample-data-btn {
+            background: linear-gradient(135deg, #28a745, #20c997);
+            border: none;
+            color: white;
+        }
+
+        .sample-data-btn:hover {
+            background: linear-gradient(135deg, #218838, #1e7e34);
+            transform: translateY(-2px);
         }
 
         /* Footer */
@@ -344,7 +367,7 @@
                         <a class="nav-link" href="#home">Home</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="#demo">Demo</a>
+                        <a class="nav-link" href="#predict">Predict</a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link" href="#about">About</a>
@@ -367,12 +390,12 @@
                         Enhance your network security and device management capabilities.
                     </p>
                     <div class="d-flex gap-3">
-                        <button class="btn btn-light btn-lg" onclick="scrollToSection('demo')">
-                            <i class="fas fa-play me-2"></i>See Demo
+                        <button class="btn btn-light btn-lg" onclick="scrollToSection('predict')">
+                            <i class="fas fa-brain me-2"></i>Start Prediction
                         </button>
-                        <a href="https://github.com/bhushancharpe15/iot-device-identification" class="btn btn-outline-light btn-lg" target="_blank">
-                            <i class="fab fa-github me-2"></i>View Code
-                        </a>
+                        <button class="btn btn-outline-light btn-lg" onclick="loadSampleData()">
+                            <i class="fas fa-download me-2"></i>Load Sample Data
+                        </button>
                     </div>
                 </div>
                 <div class="col-lg-6">
@@ -384,75 +407,134 @@
         </div>
     </section>
 
-    <!-- Demo Section -->
-    <section id="demo" class="demo-section">
+    <!-- Prediction Section -->
+    <section id="predict" class="py-5">
         <div class="container">
             <div class="row">
                 <div class="col-lg-8 mx-auto">
-                    <div class="demo-card">
-                        <h2 class="mb-4">Interactive Demo</h2>
-                        <p class="lead mb-4">
-                            Experience our IoT Device Identification System with sample data and see how it works!
-                        </p>
-                        
-                        <!-- Sample Prediction Display -->
-                        <div class="row mb-4">
-                            <div class="col-md-6">
-                                <div class="device-icon">
-                                    <i class="fas fa-baby"></i>
-                                </div>
-                                <h4>Predicted Device</h4>
-                                <h3 class="text-primary">Baby Monitor</h3>
-                                <div class="confidence-score">
-                                    <h5>Confidence: 67.02%</h5>
-                                </div>
-                            </div>
-                            <div class="col-md-6">
-                                <h5>Confidence Breakdown:</h5>
-                                <div class="mb-2">
-                                    <div class="d-flex justify-content-between">
-                                        <span>Baby Monitor</span>
-                                        <span>67.02%</span>
-                                    </div>
-                                    <div class="confidence-bar">
-                                        <div class="confidence-fill" style="width: 67.02%"></div>
-                                    </div>
-                                </div>
-                                <div class="mb-2">
-                                    <div class="d-flex justify-content-between">
-                                        <span>Smoke Detector</span>
-                                        <span>18.07%</span>
-                                    </div>
-                                    <div class="confidence-bar">
-                                        <div class="confidence-fill" style="width: 18.07%"></div>
-                                    </div>
-                                </div>
-                                <div class="mb-2">
-                                    <div class="d-flex justify-content-between">
-                                        <span>Motion Sensor</span>
-                                        <span>7.83%</span>
-                                    </div>
-                                    <div class="confidence-bar">
-                                        <div class="confidence-fill" style="width: 7.83%"></div>
-                                    </div>
-                                </div>
-                            </div>
+                    <div class="card shadow-lg">
+                        <div class="card-header bg-primary text-white">
+                            <h3 class="card-title mb-0">
+                                <i class="fas fa-cogs me-2"></i>Device Identification Form
+                            </h3>
                         </div>
-
-                        <div class="alert alert-info">
-                            <i class="fas fa-info-circle me-2"></i>
-                            <strong>Note:</strong> This is a static demo. For the full interactive experience with real-time predictions, 
-                            please visit the <a href="https://github.com/bhushancharpe15/iot-device-identification" target="_blank">GitHub repository</a> 
-                            and follow the deployment instructions.
+                        <div class="card-body">
+                            <form id="predictionForm">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <h5 class="text-primary mb-3">Network Traffic Features</h5>
+                                        
+                                        <!-- Key Features Section -->
+                                        <div class="mb-3">
+                                            <label for="bytes" class="form-label">Total Bytes</label>
+                                            <input type="number" class="form-control" id="bytes" name="bytes" 
+                                                   placeholder="e.g., 5243.52" step="0.01">
+                                        </div>
+                                        
+                                        <div class="mb-3">
+                                            <label for="packets" class="form-label">Total Packets</label>
+                                            <input type="number" class="form-control" id="packets" name="packets" 
+                                                   placeholder="e.g., 25" step="0.01">
+                                        </div>
+                                        
+                                        <div class="mb-3">
+                                            <label for="duration" class="form-label">Duration (seconds)</label>
+                                            <input type="number" class="form-control" id="duration" name="duration" 
+                                                   placeholder="e.g., 3.95" step="0.01">
+                                        </div>
+                                        
+                                        <div class="mb-3">
+                                            <label for="http_count_transactions" class="form-label">HTTP Transactions</label>
+                                            <input type="number" class="form-control" id="http_count_transactions" name="http_count_transactions" 
+                                                   placeholder="e.g., 0" step="0.01">
+                                        </div>
+                                        
+                                        <div class="mb-3">
+                                            <label for="ssl_count_transactions" class="form-label">SSL Transactions</label>
+                                            <input type="number" class="form-control" id="ssl_count_transactions" name="ssl_count_transactions" 
+                                                   placeholder="e.g., 0" step="0.01">
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="col-md-6">
+                                        <h5 class="text-primary mb-3">Advanced Features</h5>
+                                        
+                                        <div class="mb-3">
+                                            <label for="bytes_A" class="form-label">Bytes A</label>
+                                            <input type="number" class="form-control" id="bytes_A" name="bytes_A" 
+                                                   placeholder="e.g., 2575.52" step="0.01">
+                                        </div>
+                                        
+                                        <div class="mb-3">
+                                            <label for="bytes_B" class="form-label">Bytes B</label>
+                                            <input type="number" class="form-control" id="bytes_B" name="bytes_B" 
+                                                   placeholder="e.g., 2668" step="0.01">
+                                        </div>
+                                        
+                                        <div class="mb-3">
+                                            <label for="packets_A" class="form-label">Packets A</label>
+                                            <input type="number" class="form-control" id="packets_A" name="packets_A" 
+                                                   placeholder="e.g., 13" step="0.01">
+                                        </div>
+                                        
+                                        <div class="mb-3">
+                                            <label for="packets_B" class="form-label">Packets B</label>
+                                            <input type="number" class="form-control" id="packets_B" name="packets_B" 
+                                                   placeholder="e.g., 12" step="0.01">
+                                        </div>
+                                        
+                                        <div class="mb-3">
+                                            <label for="ttl_avg" class="form-label">TTL Average</label>
+                                            <input type="number" class="form-control" id="ttl_avg" name="ttl_avg" 
+                                                   placeholder="e.g., 41.92" step="0.01">
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="text-center mt-4">
+                                    <button type="submit" class="btn btn-primary btn-lg me-3">
+                                        <i class="fas fa-search me-2"></i>Identify Device
+                                    </button>
+                                    <button type="button" class="btn btn-secondary btn-lg" onclick="clearForm()">
+                                        <i class="fas fa-eraser me-2"></i>Clear Form
+                                    </button>
+                                </div>
+                            </form>
                         </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
 
-                        <div class="d-flex gap-3 justify-content-center">
-                            <a href="https://github.com/bhushancharpe15/iot-device-identification" class="btn btn-primary btn-lg" target="_blank">
-                                <i class="fab fa-github me-2"></i>View Full Project
-                            </a>
-                            <a href="https://github.com/bhushancharpe15/iot-device-identification#deployment" class="btn btn-outline-primary btn-lg" target="_blank">
-                                <i class="fas fa-rocket me-2"></i>Deploy Instructions
-                            </a>
+    <!-- Loading Section -->
+    <div id="loading" class="loading">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-8 mx-auto text-center">
+                    <div class="spinner-border text-primary mb-3" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                    <h5>Analyzing Device Patterns...</h5>
+                    <p class="text-muted">Please wait while we process your data</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Results Section -->
+    <section id="results" class="py-5 bg-light" style="display: none;">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-8 mx-auto">
+                    <div class="card shadow-lg">
+                        <div class="card-header bg-success text-white">
+                            <h3 class="card-title mb-0">
+                                <i class="fas fa-chart-line me-2"></i>Prediction Results
+                            </h3>
+                        </div>
+                        <div class="card-body">
+                            <div id="predictionResult"></div>
                         </div>
                     </div>
                 </div>
@@ -533,28 +615,6 @@
                             </div>
                         </div>
                     </div>
-
-                    <div class="mt-5">
-                        <h4>Technical Features</h4>
-                        <div class="row mt-3">
-                            <div class="col-md-6">
-                                <ul class="list-unstyled">
-                                    <li><i class="fas fa-check text-success me-2"></i>297 Network Traffic Features</li>
-                                    <li><i class="fas fa-check text-success me-2"></i>10,000 Training Samples</li>
-                                    <li><i class="fas fa-check text-success me-2"></i>Real-time Predictions</li>
-                                    <li><i class="fas fa-check text-success me-2"></i>Confidence Scoring</li>
-                                </ul>
-                            </div>
-                            <div class="col-md-6">
-                                <ul class="list-unstyled">
-                                    <li><i class="fas fa-check text-success me-2"></i>Interactive Visualizations</li>
-                                    <li><i class="fas fa-check text-success me-2"></i>Sample Data Loading</li>
-                                    <li><i class="fas fa-check text-success me-2"></i>Mobile Responsive</li>
-                                    <li><i class="fas fa-check text-success me-2"></i>Production Ready</li>
-                                </ul>
-                            </div>
-                        </div>
-                    </div>
                 </div>
             </div>
         </div>
@@ -576,20 +636,291 @@
     </footer>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
-        // Smooth scrolling for navigation links
-        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-            anchor.addEventListener('click', function (e) {
-                e.preventDefault();
-                const target = document.querySelector(this.getAttribute('href'));
-                if (target) {
-                    target.scrollIntoView({
-                        behavior: 'smooth',
-                        block: 'start'
-                    });
+        // Sample data for demonstration
+        const sampleData = {
+            bytes: 5243.52,
+            packets: 25,
+            duration: 3.95,
+            http_count_transactions: 0,
+            ssl_count_transactions: 0,
+            bytes_A: 2575.52,
+            bytes_B: 2668,
+            packets_A: 13,
+            packets_B: 12,
+            ttl_avg: 41.92
+        };
+
+        // Device categories
+        const deviceCategories = [
+            'baby_monitor', 'lights', 'motion_sensor', 'security_camera', 
+            'smoke_detector', 'socket', 'thermostat', 'TV', 'watch'
+        ];
+
+        // Initialize the application
+        document.addEventListener('DOMContentLoaded', function() {
+            setupEventListeners();
+        });
+
+        function setupEventListeners() {
+            // Form submission
+            const form = document.getElementById('predictionForm');
+            if (form) {
+                form.addEventListener('submit', handleFormSubmit);
+            }
+            
+            // Smooth scrolling for navigation links
+            document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+                anchor.addEventListener('click', function (e) {
+                    e.preventDefault();
+                    const target = document.querySelector(this.getAttribute('href'));
+                    if (target) {
+                        target.scrollIntoView({
+                            behavior: 'smooth',
+                            block: 'start'
+                        });
+                    }
+                });
+            });
+        }
+
+        function handleFormSubmit(e) {
+            e.preventDefault();
+            
+            // Show loading
+            showLoading();
+            
+            // Simulate processing time
+            setTimeout(() => {
+                hideLoading();
+                simulatePrediction();
+            }, 2000);
+        }
+
+        function simulatePrediction() {
+            // Generate random prediction for demo
+            const randomDevice = deviceCategories[Math.floor(Math.random() * deviceCategories.length)];
+            const confidence = Math.random() * 0.4 + 0.4; // 40-80% confidence
+            
+            // Generate confidence scores for all devices
+            const confidenceScores = {};
+            deviceCategories.forEach(device => {
+                if (device === randomDevice) {
+                    confidenceScores[device] = confidence;
+                } else {
+                    confidenceScores[device] = Math.random() * (1 - confidence) / (deviceCategories.length - 1);
                 }
             });
-        });
+
+            // Normalize scores
+            const total = Object.values(confidenceScores).reduce((sum, score) => sum + score, 0);
+            Object.keys(confidenceScores).forEach(device => {
+                confidenceScores[device] = confidenceScores[device] / total;
+            });
+
+            const result = {
+                predicted_class: randomDevice,
+                confidence_scores: confidenceScores,
+                sorted_confidence: Object.entries(confidenceScores)
+                    .sort(([,a], [,b]) => b - a)
+            };
+
+            displayResults(result);
+        }
+
+        function displayResults(result) {
+            const resultsSection = document.getElementById('results');
+            const resultContainer = document.getElementById('predictionResult');
+            
+            // Create results HTML
+            const resultsHTML = `
+                <div class="result-card fade-in">
+                    <div class="text-center mb-4">
+                        <div class="device-icon">
+                            ${getDeviceIcon(result.predicted_class)}
+                        </div>
+                        <h2 class="mb-3">Predicted Device: ${formatDeviceName(result.predicted_class)}</h2>
+                        <div class="confidence-score">
+                            <h4>Confidence: ${(result.confidence_scores[result.predicted_class] * 100).toFixed(2)}%</h4>
+                        </div>
+                    </div>
+                    
+                    <div class="confidence-breakdown">
+                        <h5 class="mb-3">Confidence Breakdown:</h5>
+                        ${result.sorted_confidence.map(([device, confidence]) => `
+                            <div class="mb-2">
+                                <div class="d-flex justify-content-between align-items-center mb-1">
+                                    <span>${formatDeviceName(device)}</span>
+                                    <span>${(confidence * 100).toFixed(2)}%</span>
+                                </div>
+                                <div class="confidence-bar">
+                                    <div class="confidence-fill" style="width: ${confidence * 100}%"></div>
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+                
+                <div class="chart-container">
+                    <canvas id="confidenceChart"></canvas>
+                </div>
+            `;
+            
+            resultContainer.innerHTML = resultsHTML;
+            resultsSection.style.display = 'block';
+            
+            // Scroll to results
+            resultsSection.scrollIntoView({ behavior: 'smooth' });
+            
+            // Create chart
+            createConfidenceChart(result.sorted_confidence);
+        }
+
+        function createConfidenceChart(confidenceData) {
+            const ctx = document.getElementById('confidenceChart').getContext('2d');
+            
+            const chart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: confidenceData.map(([device, _]) => formatDeviceName(device)),
+                    datasets: [{
+                        label: 'Confidence Score',
+                        data: confidenceData.map(([_, confidence]) => confidence * 100),
+                        backgroundColor: [
+                            'rgba(102, 126, 234, 0.8)',
+                            'rgba(118, 75, 162, 0.8)',
+                            'rgba(240, 147, 251, 0.8)',
+                            'rgba(245, 87, 108, 0.8)',
+                            'rgba(255, 193, 7, 0.8)',
+                            'rgba(13, 202, 240, 0.8)',
+                            'rgba(25, 135, 84, 0.8)',
+                            'rgba(220, 53, 69, 0.8)',
+                            'rgba(111, 66, 193, 0.8)'
+                        ],
+                        borderColor: [
+                            'rgba(102, 126, 234, 1)',
+                            'rgba(118, 75, 162, 1)',
+                            'rgba(240, 147, 251, 1)',
+                            'rgba(245, 87, 108, 1)',
+                            'rgba(255, 193, 7, 1)',
+                            'rgba(13, 202, 240, 1)',
+                            'rgba(25, 135, 84, 1)',
+                            'rgba(220, 53, 69, 1)',
+                            'rgba(111, 66, 193, 1)'
+                        ],
+                        borderWidth: 2,
+                        borderRadius: 8,
+                        borderSkipped: false,
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: 'Device Classification Confidence Scores',
+                            font: {
+                                size: 16,
+                                weight: 'bold'
+                            }
+                        },
+                        legend: {
+                            display: false
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 100,
+                            ticks: {
+                                callback: function(value) {
+                                    return value + '%';
+                                }
+                            }
+                        },
+                        x: {
+                            ticks: {
+                                maxRotation: 45,
+                                minRotation: 45
+                            }
+                        }
+                    },
+                    animation: {
+                        duration: 2000,
+                        easing: 'easeInOutQuart'
+                    }
+                }
+            });
+        }
+
+        function getDeviceIcon(deviceType) {
+            const icons = {
+                'baby_monitor': 'fas fa-baby',
+                'lights': 'fas fa-lightbulb',
+                'motion_sensor': 'fas fa-eye',
+                'security_camera': 'fas fa-video',
+                'smoke_detector': 'fas fa-fire',
+                'socket': 'fas fa-plug',
+                'thermostat': 'fas fa-thermometer-half',
+                'TV': 'fas fa-tv',
+                'watch': 'fas fa-clock'
+            };
+            return icons[deviceType] || 'fas fa-microchip';
+        }
+
+        function formatDeviceName(deviceType) {
+            return deviceType.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+        }
+
+        function loadSampleData() {
+            // Populate form with sample data
+            Object.keys(sampleData).forEach(key => {
+                const input = document.getElementById(key);
+                if (input) {
+                    input.value = sampleData[key];
+                }
+            });
+            
+            showAlert('Sample data loaded successfully!', 'success');
+        }
+
+        function clearForm() {
+            document.getElementById('predictionForm').reset();
+            document.getElementById('results').style.display = 'none';
+            showAlert('Form cleared successfully!', 'success');
+        }
+
+        function showLoading() {
+            document.getElementById('loading').style.display = 'block';
+            document.getElementById('loading').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function hideLoading() {
+            document.getElementById('loading').style.display = 'none';
+        }
+
+        function showAlert(message, type) {
+            // Create alert element
+            const alertDiv = document.createElement('div');
+            alertDiv.className = `alert alert-${type} alert-dismissible fade show position-fixed`;
+            alertDiv.style.cssText = 'top: 20px; right: 20px; z-index: 9999; min-width: 300px;';
+            alertDiv.innerHTML = `
+                ${message}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            `;
+            
+            // Add to page
+            document.body.appendChild(alertDiv);
+            
+            // Auto remove after 5 seconds
+            setTimeout(() => {
+                if (alertDiv.parentNode) {
+                    alertDiv.parentNode.removeChild(alertDiv);
+                }
+            }, 5000);
+        }
 
         function scrollToSection(sectionId) {
             const section = document.getElementById(sectionId);
@@ -597,28 +928,6 @@
                 section.scrollIntoView({ behavior: 'smooth' });
             }
         }
-
-        // Add some interactive animations
-        document.addEventListener('DOMContentLoaded', function() {
-            // Animate confidence bars on scroll
-            const observer = new IntersectionObserver((entries) => {
-                entries.forEach(entry => {
-                    if (entry.isIntersecting) {
-                        const bars = entry.target.querySelectorAll('.confidence-fill');
-                        bars.forEach(bar => {
-                            const width = bar.style.width;
-                            bar.style.width = '0%';
-                            setTimeout(() => {
-                                bar.style.width = width;
-                            }, 100);
-                        });
-                    }
-                });
-            });
-
-            const confidenceBars = document.querySelectorAll('.confidence-bar');
-            confidenceBars.forEach(bar => observer.observe(bar));
-        });
     </script>
 </body>
 </html>

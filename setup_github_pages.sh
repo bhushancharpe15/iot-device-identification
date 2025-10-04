@@ -48,3 +48,4 @@ echo "   ✅ Links to full project"
 echo ""
 echo "🔗 The static site provides a great showcase of your project"
 echo "   while the full interactive version is available in the repository!"
+
