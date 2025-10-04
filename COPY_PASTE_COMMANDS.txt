@@ -1,0 +1,37 @@
+# 🚀 COPY AND PASTE THESE COMMANDS
+
+# First, make sure you're in the right directory:
+cd /home/bhushan/Desktop/SE_Project_1
+
+# Add GitHub as remote origin:
+git remote add origin https://github.com/bhushancharpe15/iot-device-identification.git
+
+# Rename branch to main:
+git branch -M main
+
+# Push to GitHub (you'll be asked for username and password):
+git push -u origin main
+
+# If you get authentication error, create a Personal Access Token:
+# 1. Go to: https://github.com/settings/tokens
+# 2. Click "Generate new token (classic)"
+# 3. Select "repo" scope
+# 4. Copy the token and use it as password
+
+# After successful push, your repository will be live at:
+# https://github.com/bhushancharpe15/iot-device-identification
+
+# To deploy to Railway (easiest option):
+# 1. Go to: https://railway.app
+# 2. Sign up with GitHub
+# 3. Click "New Project"
+# 4. Select your repository
+# 5. Railway will auto-deploy!
+
+# To deploy to Render:
+# 1. Go to: https://render.com
+# 2. Sign up with GitHub
+# 3. Click "New Web Service"
+# 4. Connect your repository
+# 5. Build Command: pip install -r requirements.txt
+# 6. Start Command: gunicorn app:app
