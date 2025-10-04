@@ -44,7 +44,7 @@ A comprehensive web application for identifying IoT devices based on their netwo
 
 1. **Clone the repository**
    ```bash
-   git clone https://github.com/YOUR_USERNAME/iot-device-identification.git
+   git clone https://github.com/bhushancharpe15/iot-device-identification.git
    cd iot-device-identification
    ```
 
@@ -73,7 +73,7 @@ A comprehensive web application for identifying IoT devices based on their netwo
 
 #### Option 1: Deploy to Heroku (Recommended)
 
-1. **Fork this repository** to your GitHub account
+1. **Fork this repository** to your GitHub account: https://github.com/bhushancharpe15/iot-device-identification
 2. **Create a Heroku account** at [heroku.com](https://heroku.com)
 3. **Install Heroku CLI** and login:
    ```bash
@@ -96,7 +96,7 @@ A comprehensive web application for identifying IoT devices based on their netwo
 
 #### Option 2: Deploy to Railway
 
-1. **Fork this repository** to your GitHub account
+1. **Fork this repository** to your GitHub account: https://github.com/bhushancharpe15/iot-device-identification
 2. **Go to [Railway.app](https://railway.app)** and sign up
 3. **Connect your GitHub account**
 4. **Create a new project** and select your forked repository
@@ -104,7 +104,7 @@ A comprehensive web application for identifying IoT devices based on their netwo
 
 #### Option 3: Deploy to Render
 
-1. **Fork this repository** to your GitHub account
+1. **Fork this repository** to your GitHub account: https://github.com/bhushancharpe15/iot-device-identification
 2. **Go to [Render.com](https://render.com)** and sign up
 3. **Create a new Web Service**
 4. **Connect your GitHub repository**
