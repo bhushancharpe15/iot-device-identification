@@ -1,0 +1,31 @@
+# 🚀 Push to GitHub - Copy and Paste These Commands
+
+# Make sure you're in the right directory:
+cd /home/bhushan/Desktop/SE_Project_1
+
+# Add all files to Git:
+git add .
+
+# Commit the changes:
+git commit -m "Add GitHub Pages static site with interactive demo"
+
+# Push to GitHub (use your Personal Access Token as password):
+git push origin main
+
+# After pushing, go to GitHub Pages settings:
+# 1. Visit: https://github.com/bhushancharpe15/iot-device-identification/settings/pages
+# 2. Source: Deploy from a branch
+# 3. Branch: main
+# 4. Folder: /static_site
+# 5. Click Save
+
+# Your website will be live at:
+# https://bhushancharpe15.github.io/iot-device-identification/
+
+# What you'll get:
+# ✅ Beautiful static website
+# ✅ Interactive demo interface
+# ✅ Sample predictions display
+# ✅ Mobile responsive design
+# ✅ Professional presentation
+# ✅ Direct links to full project
