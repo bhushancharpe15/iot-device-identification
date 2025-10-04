@@ -1,0 +1,624 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IoT Device Identification System</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #0d6efd;
+            --secondary-color: #6c757d;
+            --success-color: #198754;
+            --info-color: #0dcaf0;
+            --warning-color: #ffc107;
+            --danger-color: #dc3545;
+            --light-color: #f8f9fa;
+            --dark-color: #212529;
+            --gradient-primary: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --gradient-secondary: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            --shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            --shadow-hover: 0 15px 40px rgba(0, 0, 0, 0.15);
+        }
+
+        body {
+            font-family: 'Inter', 'Segoe UI', 'Roboto', 'Helvetica Neue', Arial, sans-serif;
+            line-height: 1.6;
+            color: var(--dark-color);
+            font-weight: 400;
+        }
+
+        /* Navigation */
+        .navbar {
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+            transition: all 0.3s ease;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+            padding: 1.2rem 0;
+            border-bottom: 3px solid rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(10px);
+            position: relative;
+        }
+
+        .navbar::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.05) 100%);
+            pointer-events: none;
+        }
+
+        .navbar-brand {
+            font-family: 'Inter', 'Segoe UI', 'Roboto', 'Helvetica Neue', Arial, sans-serif;
+            font-weight: 800;
+            font-size: 1.9rem;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+            letter-spacing: 0.8px;
+            transition: all 0.3s ease;
+            position: relative;
+            z-index: 2;
+        }
+
+        .navbar-brand:hover {
+            transform: scale(1.05);
+            text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.5);
+        }
+
+        .navbar-brand i {
+            margin-right: 0.5rem;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+
+        .nav-link {
+            font-family: 'Inter', 'Segoe UI', 'Roboto', 'Helvetica Neue', Arial, sans-serif;
+            font-weight: 600;
+            font-size: 1.15rem;
+            padding: 0.8rem 1.8rem !important;
+            margin: 0 0.3rem;
+            border-radius: 30px;
+            transition: all 0.3s ease;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
+            position: relative;
+            overflow: hidden;
+            letter-spacing: 0.3px;
+            z-index: 2;
+        }
+
+        .nav-link::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: left 0.5s;
+        }
+
+        .nav-link:hover::before {
+            left: 100%;
+        }
+
+        .nav-link:hover {
+            color: #ffffff !important;
+            background: rgba(255, 255, 255, 0.15);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        /* Hero Section */
+        .hero-section {
+            background: var(--gradient-primary);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hero-section::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 1000"><defs><pattern id="grid" width="50" height="50" patternUnits="userSpaceOnUse"><path d="M 50 0 L 0 0 0 50" fill="none" stroke="rgba(255,255,255,0.1)" stroke-width="1"/></pattern></defs><rect width="100%" height="100%" fill="url(%23grid)"/></svg>');
+            opacity: 0.3;
+        }
+
+        .hero-section .container {
+            position: relative;
+            z-index: 2;
+        }
+
+        .hero-image {
+            text-align: center;
+            font-size: 15rem;
+            color: rgba(255, 255, 255, 0.2);
+            animation: float 6s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-20px); }
+        }
+
+        .display-4 {
+            font-family: 'Inter', 'Segoe UI', 'Roboto', 'Helvetica Neue', Arial, sans-serif;
+            font-weight: 800;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+            letter-spacing: -0.5px;
+        }
+
+        .lead {
+            font-family: 'Inter', 'Segoe UI', 'Roboto', 'Helvetica Neue', Arial, sans-serif;
+            font-size: 1.3rem;
+            font-weight: 400;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
+            line-height: 1.7;
+        }
+
+        /* Cards */
+        .card {
+            border: none;
+            border-radius: 15px;
+            transition: all 0.3s ease;
+            overflow: hidden;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--shadow-hover);
+        }
+
+        .card-header {
+            border-radius: 15px 15px 0 0 !important;
+            border: none;
+            padding: 1.5rem;
+            font-family: 'Inter', 'Segoe UI', 'Roboto', 'Helvetica Neue', Arial, sans-serif;
+            font-weight: 600;
+            font-size: 1.2rem;
+            letter-spacing: 0.3px;
+        }
+
+        .card-body {
+            padding: 2rem;
+            font-family: 'Inter', 'Segoe UI', 'Roboto', 'Helvetica Neue', Arial, sans-serif;
+        }
+
+        /* Forms */
+        .form-control {
+            border-radius: 10px;
+            border: 2px solid #e9ecef;
+            padding: 0.75rem 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .form-control:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25);
+            transform: translateY(-2px);
+        }
+
+        .form-label {
+            font-family: 'Inter', 'Segoe UI', 'Roboto', 'Helvetica Neue', Arial, sans-serif;
+            font-weight: 600;
+            font-size: 1rem;
+            color: var(--dark-color);
+            margin-bottom: 0.5rem;
+            letter-spacing: 0.2px;
+        }
+
+        /* Buttons */
+        .btn {
+            font-family: 'Inter', 'Segoe UI', 'Roboto', 'Helvetica Neue', Arial, sans-serif;
+            border-radius: 10px;
+            padding: 0.75rem 2rem;
+            font-weight: 600;
+            font-size: 1rem;
+            letter-spacing: 0.3px;
+            transition: all 0.3s ease;
+            border: none;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: left 0.5s;
+        }
+
+        .btn:hover::before {
+            left: 100%;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow);
+        }
+
+        .btn-lg {
+            padding: 1rem 2.5rem;
+            font-size: 1.1rem;
+        }
+
+        /* Demo Section */
+        .demo-section {
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            padding: 4rem 0;
+        }
+
+        .demo-card {
+            background: white;
+            border-radius: 20px;
+            padding: 3rem;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+
+        .device-icon {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+            color: var(--primary-color);
+        }
+
+        .confidence-bar {
+            height: 8px;
+            background: rgba(0, 0, 0, 0.1);
+            border-radius: 4px;
+            overflow: hidden;
+            margin: 0.5rem 0;
+        }
+
+        .confidence-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #4CAF50, #8BC34A);
+            border-radius: 4px;
+            transition: width 1s ease;
+        }
+
+        /* Footer */
+        footer {
+            background: var(--dark-color);
+            color: white;
+            padding: 2rem 0;
+            text-align: center;
+        }
+
+        /* Animations */
+        .fade-in {
+            animation: fadeIn 0.5s ease-in;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .hero-image {
+                font-size: 8rem;
+            }
+            
+            .display-4 {
+                font-size: 2.5rem;
+            }
+            
+            .lead {
+                font-size: 1.1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div class="container">
+            <a class="navbar-brand" href="#">
+                <i class="fas fa-microchip me-2"></i>
+                IoT Device Identifier
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="#home">Home</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#demo">Demo</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#about">About</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section id="home" class="hero-section">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-lg-6">
+                    <h1 class="display-4 fw-bold text-white mb-4">
+                        Smart IoT Device Identification
+                    </h1>
+                    <p class="lead text-white mb-4">
+                        Advanced machine learning system to identify IoT devices based on their network traffic patterns. 
+                        Enhance your network security and device management capabilities.
+                    </p>
+                    <div class="d-flex gap-3">
+                        <button class="btn btn-light btn-lg" onclick="scrollToSection('demo')">
+                            <i class="fas fa-play me-2"></i>See Demo
+                        </button>
+                        <a href="https://github.com/bhushancharpe15/iot-device-identification" class="btn btn-outline-light btn-lg" target="_blank">
+                            <i class="fab fa-github me-2"></i>View Code
+                        </a>
+                    </div>
+                </div>
+                <div class="col-lg-6">
+                    <div class="hero-image">
+                        <i class="fas fa-network-wired"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Demo Section -->
+    <section id="demo" class="demo-section">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-8 mx-auto">
+                    <div class="demo-card">
+                        <h2 class="mb-4">Interactive Demo</h2>
+                        <p class="lead mb-4">
+                            Experience our IoT Device Identification System with sample data and see how it works!
+                        </p>
+                        
+                        <!-- Sample Prediction Display -->
+                        <div class="row mb-4">
+                            <div class="col-md-6">
+                                <div class="device-icon">
+                                    <i class="fas fa-baby"></i>
+                                </div>
+                                <h4>Predicted Device</h4>
+                                <h3 class="text-primary">Baby Monitor</h3>
+                                <div class="confidence-score">
+                                    <h5>Confidence: 67.02%</h5>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <h5>Confidence Breakdown:</h5>
+                                <div class="mb-2">
+                                    <div class="d-flex justify-content-between">
+                                        <span>Baby Monitor</span>
+                                        <span>67.02%</span>
+                                    </div>
+                                    <div class="confidence-bar">
+                                        <div class="confidence-fill" style="width: 67.02%"></div>
+                                    </div>
+                                </div>
+                                <div class="mb-2">
+                                    <div class="d-flex justify-content-between">
+                                        <span>Smoke Detector</span>
+                                        <span>18.07%</span>
+                                    </div>
+                                    <div class="confidence-bar">
+                                        <div class="confidence-fill" style="width: 18.07%"></div>
+                                    </div>
+                                </div>
+                                <div class="mb-2">
+                                    <div class="d-flex justify-content-between">
+                                        <span>Motion Sensor</span>
+                                        <span>7.83%</span>
+                                    </div>
+                                    <div class="confidence-bar">
+                                        <div class="confidence-fill" style="width: 7.83%"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="alert alert-info">
+                            <i class="fas fa-info-circle me-2"></i>
+                            <strong>Note:</strong> This is a static demo. For the full interactive experience with real-time predictions, 
+                            please visit the <a href="https://github.com/bhushancharpe15/iot-device-identification" target="_blank">GitHub repository</a> 
+                            and follow the deployment instructions.
+                        </div>
+
+                        <div class="d-flex gap-3 justify-content-center">
+                            <a href="https://github.com/bhushancharpe15/iot-device-identification" class="btn btn-primary btn-lg" target="_blank">
+                                <i class="fab fa-github me-2"></i>View Full Project
+                            </a>
+                            <a href="https://github.com/bhushancharpe15/iot-device-identification#deployment" class="btn btn-outline-primary btn-lg" target="_blank">
+                                <i class="fas fa-rocket me-2"></i>Deploy Instructions
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- About Section -->
+    <section id="about" class="py-5">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-8 mx-auto text-center">
+                    <h2 class="mb-4">About the System</h2>
+                    <p class="lead mb-4">
+                        This IoT Device Identification System uses advanced machine learning algorithms 
+                        to analyze network traffic patterns and accurately identify different types of IoT devices.
+                    </p>
+                    
+                    <div class="row">
+                        <div class="col-md-4 mb-4">
+                            <div class="card h-100">
+                                <div class="card-body text-center">
+                                    <i class="fas fa-brain fa-3x text-primary mb-3"></i>
+                                    <h5>XGBoost Model</h5>
+                                    <p>Powered by state-of-the-art gradient boosting algorithm</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4 mb-4">
+                            <div class="card h-100">
+                                <div class="card-body text-center">
+                                    <i class="fas fa-shield-alt fa-3x text-success mb-3"></i>
+                                    <h5>Security Focused</h5>
+                                    <p>Enhance network security through device identification</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4 mb-4">
+                            <div class="card h-100">
+                                <div class="card-body text-center">
+                                    <i class="fas fa-chart-bar fa-3x text-info mb-3"></i>
+                                    <h5>High Accuracy</h5>
+                                    <p>Advanced feature engineering for precise predictions</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mt-5">
+                        <h4>Supported Device Categories</h4>
+                        <div class="row mt-3">
+                            <div class="col-md-3 col-sm-6 mb-2">
+                                <span class="badge bg-primary fs-6">Baby Monitor</span>
+                            </div>
+                            <div class="col-md-3 col-sm-6 mb-2">
+                                <span class="badge bg-primary fs-6">Lights</span>
+                            </div>
+                            <div class="col-md-3 col-sm-6 mb-2">
+                                <span class="badge bg-primary fs-6">Motion Sensor</span>
+                            </div>
+                            <div class="col-md-3 col-sm-6 mb-2">
+                                <span class="badge bg-primary fs-6">Security Camera</span>
+                            </div>
+                            <div class="col-md-3 col-sm-6 mb-2">
+                                <span class="badge bg-primary fs-6">Smoke Detector</span>
+                            </div>
+                            <div class="col-md-3 col-sm-6 mb-2">
+                                <span class="badge bg-primary fs-6">Socket</span>
+                            </div>
+                            <div class="col-md-3 col-sm-6 mb-2">
+                                <span class="badge bg-primary fs-6">Thermostat</span>
+                            </div>
+                            <div class="col-md-3 col-sm-6 mb-2">
+                                <span class="badge bg-primary fs-6">TV</span>
+                            </div>
+                            <div class="col-md-3 col-sm-6 mb-2">
+                                <span class="badge bg-primary fs-6">Watch</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mt-5">
+                        <h4>Technical Features</h4>
+                        <div class="row mt-3">
+                            <div class="col-md-6">
+                                <ul class="list-unstyled">
+                                    <li><i class="fas fa-check text-success me-2"></i>297 Network Traffic Features</li>
+                                    <li><i class="fas fa-check text-success me-2"></i>10,000 Training Samples</li>
+                                    <li><i class="fas fa-check text-success me-2"></i>Real-time Predictions</li>
+                                    <li><i class="fas fa-check text-success me-2"></i>Confidence Scoring</li>
+                                </ul>
+                            </div>
+                            <div class="col-md-6">
+                                <ul class="list-unstyled">
+                                    <li><i class="fas fa-check text-success me-2"></i>Interactive Visualizations</li>
+                                    <li><i class="fas fa-check text-success me-2"></i>Sample Data Loading</li>
+                                    <li><i class="fas fa-check text-success me-2"></i>Mobile Responsive</li>
+                                    <li><i class="fas fa-check text-success me-2"></i>Production Ready</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-dark text-white py-4">
+        <div class="container text-center">
+            <p>&copy; 2024 IoT Device Identification System. Built with Flask, XGBoost, and modern web technologies.</p>
+            <p>
+                <a href="https://github.com/bhushancharpe15/iot-device-identification" class="text-white me-3" target="_blank">
+                    <i class="fab fa-github me-1"></i>GitHub Repository
+                </a>
+                <a href="https://github.com/bhushancharpe15/iot-device-identification#deployment" class="text-white" target="_blank">
+                    <i class="fas fa-rocket me-1"></i>Deploy Instructions
+                </a>
+            </p>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Smooth scrolling for navigation links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }
+            });
+        });
+
+        function scrollToSection(sectionId) {
+            const section = document.getElementById(sectionId);
+            if (section) {
+                section.scrollIntoView({ behavior: 'smooth' });
+            }
+        }
+
+        // Add some interactive animations
+        document.addEventListener('DOMContentLoaded', function() {
+            // Animate confidence bars on scroll
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        const bars = entry.target.querySelectorAll('.confidence-fill');
+                        bars.forEach(bar => {
+                            const width = bar.style.width;
+                            bar.style.width = '0%';
+                            setTimeout(() => {
+                                bar.style.width = width;
+                            }, 100);
+                        });
+                    }
+                });
+            });
+
+            const confidenceBars = document.querySelectorAll('.confidence-bar');
+            confidenceBars.forEach(bar => observer.observe(bar));
+        });
+    </script>
+</body>
+</html>
