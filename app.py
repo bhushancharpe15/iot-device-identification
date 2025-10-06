@@ -22,63 +22,45 @@ device_categories = [
 ]
 
 def load_model():
-    """Load trained models (ensemble) and prepare feature columns"""
+    """Load trained models (ensemble) from 'trained model final' ONLY and prepare feature columns"""
     global models, scaler, feature_columns, device_categories
     try:
         models = []
 
-        # Prefer models from "trained model final" directory if present
+        # Enforce loading from the specific directory
         trained_dir = os.path.join(os.getcwd(), 'trained model final')
+        if not os.path.isdir(trained_dir):
+            raise RuntimeError("Required directory 'trained model final' not found")
 
-        loaded_from_trained_dir = False
-        if os.path.isdir(trained_dir):
-            # Load label encoder if available to get class names
-            label_path = os.path.join(trained_dir, 'label_encoder.pkl')
-            if os.path.exists(label_path):
-                try:
-                    with open(label_path, 'rb') as f:
-                        le = pickle.load(f)
-                    if hasattr(le, 'classes_'):
-                        device_categories = [str(c) for c in le.classes_]
-                except Exception:
-                    pass
+        # Load label encoder if available to get class names
+        label_path = os.path.join(trained_dir, 'label_encoder.pkl')
+        if os.path.exists(label_path):
+            try:
+                with open(label_path, 'rb') as f:
+                    le = pickle.load(f)
+                if hasattr(le, 'classes_'):
+                    device_categories = [str(c) for c in le.classes_]
+            except Exception:
+                pass
 
-            # Load any sklearn-compatible models in directory (exclude label encoder)
-            for fname in os.listdir(trained_dir):
-                if not fname.lower().endswith('.pkl'):
-                    continue
-                if 'label' in fname.lower():
-                    continue
-                fpath = os.path.join(trained_dir, fname)
-                try:
-                    with open(fpath, 'rb') as f:
-                        m = pickle.load(f)
-                    # Must have predict_proba
-                    if hasattr(m, 'predict_proba'):
-                        models.append(m)
-                        loaded_from_trained_dir = True
-                except Exception:
-                    continue
-
-        # Fallback: load legacy XGBoost booster JSON as a wrapper
-        if not models:
-            booster_path = os.path.join(os.getcwd(), 'best_xgb_model.json')
-            if os.path.exists(booster_path):
-                booster = xgb.Booster()
-                booster.load_model(booster_path)
-
-                class BoosterWrapper:
-                    def __init__(self, booster):
-                        self.booster = booster
-                    def predict_proba(self, X):
-                        dmat = xgb.DMatrix(X)
-                        proba = self.booster.predict(dmat, output_margin=False)
-                        return proba
-
-                models.append(BoosterWrapper(booster))
+        # Load any sklearn-compatible models in directory (exclude label encoder)
+        for fname in os.listdir(trained_dir):
+            if not fname.lower().endswith('.pkl'):
+                continue
+            if 'label' in fname.lower():
+                continue
+            fpath = os.path.join(trained_dir, fname)
+            try:
+                with open(fpath, 'rb') as f:
+                    m = pickle.load(f)
+                # Must have predict_proba
+                if hasattr(m, 'predict_proba'):
+                    models.append(m)
+            except Exception:
+                continue
 
         if not models:
-            raise RuntimeError('No models could be loaded.')
+            raise RuntimeError("No sklearn-compatible models (.pkl with predict_proba) found in 'trained model final'")
 
         # Load the dataset to get feature columns
         df = pd.read_csv('iot_device_test_augmented_10k.csv')
@@ -88,8 +70,7 @@ def load_model():
         scaler = StandardScaler()
         scaler.fit(df[feature_columns])
 
-        src = 'trained model final' if loaded_from_trained_dir else 'best_xgb_model.json'
-        print(f"Loaded {len(models)} model(s) from {src} with {len(feature_columns)} features")
+        print(f"Loaded {len(models)} model(s) from 'trained model final' with {len(feature_columns)} features")
         print(f"Classes: {device_categories}")
         return True
     except Exception as e:
