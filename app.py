@@ -12,8 +12,8 @@ warnings.filterwarnings('ignore')
 app = Flask(__name__)
 app.secret_key = 'iot_device_identification_secret_key_2024'
 
-# Global variables for model and scaler
-model = None
+# Global variables for models and scaler
+models = []
 scaler = None
 feature_columns = None
 device_categories = [
@@ -22,52 +22,124 @@ device_categories = [
 ]
 
 def load_model():
-    """Load the trained XGBoost model and prepare feature columns"""
-    global model, scaler, feature_columns
-    
+    """Load trained models (ensemble) and prepare feature columns"""
+    global models, scaler, feature_columns, device_categories
     try:
-        # Load the XGBoost model
-        model = xgb.Booster()
-        model.load_model('best_xgb_model.json')
-        
+        models = []
+
+        # Prefer models from "trained model final" directory if present
+        trained_dir = os.path.join(os.getcwd(), 'trained model final')
+
+        loaded_from_trained_dir = False
+        if os.path.isdir(trained_dir):
+            # Load label encoder if available to get class names
+            label_path = os.path.join(trained_dir, 'label_encoder.pkl')
+            if os.path.exists(label_path):
+                try:
+                    with open(label_path, 'rb') as f:
+                        le = pickle.load(f)
+                    if hasattr(le, 'classes_'):
+                        device_categories = [str(c) for c in le.classes_]
+                except Exception:
+                    pass
+
+            # Load any sklearn-compatible models in directory (exclude label encoder)
+            for fname in os.listdir(trained_dir):
+                if not fname.lower().endswith('.pkl'):
+                    continue
+                if 'label' in fname.lower():
+                    continue
+                fpath = os.path.join(trained_dir, fname)
+                try:
+                    with open(fpath, 'rb') as f:
+                        m = pickle.load(f)
+                    # Must have predict_proba
+                    if hasattr(m, 'predict_proba'):
+                        models.append(m)
+                        loaded_from_trained_dir = True
+                except Exception:
+                    continue
+
+        # Fallback: load legacy XGBoost booster JSON as a wrapper
+        if not models:
+            booster_path = os.path.join(os.getcwd(), 'best_xgb_model.json')
+            if os.path.exists(booster_path):
+                booster = xgb.Booster()
+                booster.load_model(booster_path)
+
+                class BoosterWrapper:
+                    def __init__(self, booster):
+                        self.booster = booster
+                    def predict_proba(self, X):
+                        dmat = xgb.DMatrix(X)
+                        proba = self.booster.predict(dmat, output_margin=False)
+                        return proba
+
+                models.append(BoosterWrapper(booster))
+
+        if not models:
+            raise RuntimeError('No models could be loaded.')
+
         # Load the dataset to get feature columns
         df = pd.read_csv('iot_device_test_augmented_10k.csv')
         feature_columns = [col for col in df.columns if col != 'device_category']
-        
-        # Create a scaler (we'll fit it on the training data)
+
+        # Create a scaler (fit on dataset features)
         scaler = StandardScaler()
         scaler.fit(df[feature_columns])
-        
-        print(f"Model loaded successfully with {len(feature_columns)} features")
+
+        src = 'trained model final' if loaded_from_trained_dir else 'best_xgb_model.json'
+        print(f"Loaded {len(models)} model(s) from {src} with {len(feature_columns)} features")
+        print(f"Classes: {device_categories}")
         return True
     except Exception as e:
-        print(f"Error loading model: {str(e)}")
+        print(f"Error loading model(s): {str(e)}")
         return False
 
 def predict_device_category(features):
-    """Predict device category from input features"""
+    """Predict device category from input features using ensemble average"""
     try:
         # Convert features to numpy array and reshape
         features_array = np.array(features).reshape(1, -1)
-        
+
         # Scale the features
         features_scaled = scaler.transform(features_array)
-        
-        # Convert to DMatrix for XGBoost
-        dmatrix = xgb.DMatrix(features_scaled)
-        
-        # Get prediction probabilities (this gives us probabilities for all classes)
-        prediction_proba = model.predict(dmatrix, output_margin=False)
-        
-        # Get the predicted class (index of highest probability)
-        predicted_class_idx = np.argmax(prediction_proba[0])  # [0] because we have one sample
+
+        # Aggregate probabilities across models
+        proba_sum = None
+        for m in models:
+            proba = m.predict_proba(features_scaled)
+            # Ensure shape (1, n_classes)
+            proba = np.array(proba)
+            if proba.ndim == 1:
+                proba = proba.reshape(1, -1)
+            if proba_sum is None:
+                proba_sum = np.zeros_like(proba, dtype=float)
+            proba_sum += proba
+
+        avg_proba = proba_sum / max(len(models), 1)
+
+        # Align number of classes if needed
+        n_classes = len(device_categories)
+        if avg_proba.shape[1] != n_classes:
+            # If mismatch, truncate/pad
+            if avg_proba.shape[1] > n_classes:
+                avg_proba = avg_proba[:, :n_classes]
+            else:
+                pad = np.zeros((avg_proba.shape[0], n_classes - avg_proba.shape[1]))
+                avg_proba = np.concatenate([avg_proba, pad], axis=1)
+
+        # Normalize to probabilities
+        row_sum = avg_proba.sum(axis=1, keepdims=True)
+        row_sum[row_sum == 0] = 1.0
+        avg_proba = avg_proba / row_sum
+
+        # Get the predicted class
+        predicted_class_idx = int(np.argmax(avg_proba[0]))
         predicted_class = device_categories[predicted_class_idx]
-        
-        # Get confidence scores for all classes
-        confidence_scores = {}
-        for i, category in enumerate(device_categories):
-            confidence_scores[category] = float(prediction_proba[0][i])  # [0] because we have one sample
-        
+
+        # Build confidence dict
+        confidence_scores = {device_categories[i]: float(avg_proba[0][i]) for i in range(n_classes)}
         return predicted_class, confidence_scores
     except Exception as e:
         print(f"Error in prediction: {str(e)}")
