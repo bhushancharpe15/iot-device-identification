@@ -13,6 +13,8 @@ from ibm_cloud_sdk_core.authenticators import IAMAuthenticator
 from dotenv import load_dotenv
 
 load_dotenv('.env.local')
+# Also support IBM exported credentials file name if present
+load_dotenv('ibm-credentials.env')
 app = Flask(__name__)
 app.secret_key = 'iot_device_identification_secret_key_2024'
 
