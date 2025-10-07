@@ -10,7 +10,9 @@ import warnings
 warnings.filterwarnings('ignore')
 from ibm_watson import AssistantV2
 from ibm_cloud_sdk_core.authenticators import IAMAuthenticator
+from dotenv import load_dotenv
 
+load_dotenv('.env.local')
 app = Flask(__name__)
 app.secret_key = 'iot_device_identification_secret_key_2024'
 
