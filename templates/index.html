@@ -265,7 +265,66 @@
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+      /* Floating chat widget */
+      .chat-widget-btn{position:fixed;right:24px;bottom:24px;z-index:1050;border:none;border-radius:50%;width:56px;height:56px;background:#0d6efd;color:#fff;box-shadow:0 8px 24px rgba(13,110,253,.4);display:flex;align-items:center;justify-content:center;font-size:22px}
+      .chat-panel{position:fixed;right:24px;bottom:90px;width:340px;max-width:90vw;height:460px;max-height:75vh;background:#fff;border-radius:16px;box-shadow:0 16px 40px rgba(0,0,0,.2);display:none;flex-direction:column;overflow:hidden;z-index:1050}
+      .chat-header{background:#0d6efd;color:#fff;padding:12px 16px;font-weight:600;display:flex;align-items:center;justify-content:space-between}
+      .chat-messages{flex:1;padding:12px;overflow:auto;background:#f7f9fc}
+      .chat-input{display:flex;gap:8px;padding:12px;border-top:1px solid #e9ecef;background:#fff}
+      .chat-bubble{padding:10px 12px;border-radius:12px;margin-bottom:8px;max-width:80%;font-size:.95rem}
+      .chat-bubble.user{background:#0d6efd;color:#fff;margin-left:auto;border-bottom-right-radius:4px}
+      .chat-bubble.bot{background:#e9f2ff;color:#0b2e66;margin-right:auto;border-bottom-left-radius:4px}
+    </style>
     <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+    <!-- Floating chat widget markup -->
+    <button class="chat-widget-btn" onclick="toggleChat()" title="Chat">
+      <i class="fas fa-comments"></i>
+    </button>
+    <div class="chat-panel">
+      <div class="chat-header">Assistant
+        <button class="btn btn-sm btn-light" onclick="toggleChat()">Close</button>
+      </div>
+      <div class="chat-messages" id="chatMessages"></div>
+      <div class="chat-input">
+        <input id="chatInput" class="form-control" placeholder="Type your message..." />
+        <button class="btn btn-primary" onclick="sendChat()">Send</button>
+      </div>
+    </div>
+    <script>
+      let watsonSessionId = null;
+      function ensureChatSession(){
+        if(watsonSessionId) return Promise.resolve(watsonSessionId);
+        return fetch('/chat/start_session',{method:'POST'}).then(r=>r.json()).then(j=>{
+          if(j.error) throw new Error(j.error);
+          watsonSessionId = j.session_id; return watsonSessionId;
+        });
+      }
+      function appendMsg(text, who){
+        const box=document.querySelector('.chat-messages');
+        const div=document.createElement('div');
+        div.className='chat-bubble '+(who||'bot');
+        div.textContent=text; box.appendChild(div); box.scrollTop=box.scrollHeight;
+      }
+      function toggleChat(){
+        const p=document.querySelector('.chat-panel');
+        p.style.display = p.style.display==='flex'?'none':'flex';
+        if(p.style.display==='flex' && !watsonSessionId){ ensureChatSession().catch(e=>appendMsg('Chat unavailable: '+e.message,'bot')); }
+      }
+      function sendChat(){
+        const inp=document.getElementById('chatInput');
+        const msg=inp.value.trim(); if(!msg) return;
+        appendMsg(msg,'user'); inp.value='';
+        ensureChatSession().then(sessionId=>{
+          return fetch('/chat/message',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({session_id:sessionId,message:msg})});
+        }).then(r=>r.json()).then(j=>{
+          if(j.error){ appendMsg('Error: '+j.error,'bot'); return; }
+          const output = (((j||{}).output||{}).generic||[]).map(g=>g.text).filter(Boolean).join('\n') || '...';
+          appendMsg(output,'bot');
+        }).catch(e=>appendMsg('Error: '+e.message,'bot'));
+      }
+      document.addEventListener('keydown',e=>{ if(e.key==='Enter' && document.activeElement && document.activeElement.id==='chatInput'){ e.preventDefault(); sendChat(); }});
+    </script>
 </body>
 </html>
 

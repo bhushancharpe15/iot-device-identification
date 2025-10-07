@@ -8,6 +8,8 @@ from sklearn.preprocessing import StandardScaler
 import os
 import warnings
 warnings.filterwarnings('ignore')
+from ibm_watson import AssistantV2
+from ibm_cloud_sdk_core.authenticators import IAMAuthenticator
 
 app = Flask(__name__)
 app.secret_key = 'iot_device_identification_secret_key_2024'
@@ -125,6 +127,51 @@ def predict_device_category(features):
     except Exception as e:
         print(f"Error in prediction: {str(e)}")
         return None, None
+
+############################################
+# IBM Watson Assistant proxy (backend)
+############################################
+
+def get_watson_client():
+    api_key = os.getenv('ASSISTANT_APIKEY') or os.getenv('ASSISTANT_IAM_APIKEY')
+    url = os.getenv('ASSISTANT_URL')
+    if not api_key or not url:
+        raise RuntimeError('Watson Assistant API credentials not set in environment.')
+    authenticator = IAMAuthenticator(api_key)
+    assistant = AssistantV2(version='2021-11-27', authenticator=authenticator)
+    assistant.set_service_url(url)
+    return assistant
+
+@app.route('/chat/start_session', methods=['POST'])
+def chat_start_session():
+    try:
+        assistant_id = os.getenv('ASSISTANT_ID')
+        if not assistant_id:
+            return jsonify({'error': 'ASSISTANT_ID not configured on server'}), 500
+        assistant = get_watson_client()
+        session = assistant.create_session(assistant_id=assistant_id).get_result()
+        return jsonify(session)
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/chat/message', methods=['POST'])
+def chat_message():
+    try:
+        data = request.get_json(force=True)
+        assistant_id = os.getenv('ASSISTANT_ID')
+        session_id = data.get('session_id')
+        message = data.get('message', '')
+        if not assistant_id or not session_id:
+            return jsonify({'error': 'Missing assistant_id or session_id'}), 400
+        assistant = get_watson_client()
+        response = assistant.message(
+            assistant_id=assistant_id,
+            session_id=session_id,
+            input={'message_type': 'text', 'text': message}
+        ).get_result()
+        return jsonify(response)
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
 
 @app.route('/')
 def index():
