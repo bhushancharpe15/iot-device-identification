@@ -635,6 +635,51 @@
         </div>
     </footer>
 
+    <!-- Chatbot Demo -->
+    <div id="chatbot" style="display: none; position: fixed; bottom: 20px; right: 20px; width: 350px; height: 500px; background: white; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.3); z-index: 1000; border: 1px solid #ddd;">
+        <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 15px; border-radius: 15px 15px 0 0; display: flex; justify-content: space-between; align-items: center;">
+            <h6 style="margin: 0; font-weight: 600;">🤖 IoT Assistant</h6>
+            <button onclick="toggleChatbot()" style="background: none; border: none; color: white; font-size: 18px; cursor: pointer;">×</button>
+        </div>
+        <div id="chatMessages" style="height: 350px; overflow-y: auto; padding: 15px; background: #f8f9fa;">
+            <!-- Messages will be added here -->
+        </div>
+        <div style="padding: 15px; border-top: 1px solid #eee; display: flex; gap: 10px;">
+            <input id="chatInput" type="text" placeholder="Ask about IoT devices..." style="flex: 1; padding: 8px 12px; border: 1px solid #ddd; border-radius: 20px; outline: none;">
+            <button onclick="sendChatMessage()" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; padding: 8px 15px; border-radius: 20px; cursor: pointer;">Send</button>
+        </div>
+    </div>
+
+    <!-- Chatbot Toggle Button -->
+    <button onclick="toggleChatbot()" style="position: fixed; bottom: 20px; right: 20px; width: 60px; height: 60px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; border-radius: 50%; cursor: pointer; box-shadow: 0 5px 15px rgba(0,0,0,0.3); z-index: 999; font-size: 24px;">
+        💬
+    </button>
+
+    <style>
+        .chat-message {
+            margin: 10px 0;
+            padding: 10px 15px;
+            border-radius: 15px;
+            max-width: 80%;
+            word-wrap: break-word;
+        }
+        .chat-message.user {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            margin-left: auto;
+            text-align: right;
+        }
+        .chat-message.bot {
+            background: #e9ecef;
+            color: #333;
+            margin-right: auto;
+        }
+        #chatInput:focus {
+            border-color: #667eea;
+            box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+        }
+    </style>
+
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
@@ -963,6 +1008,143 @@
                 section.scrollIntoView({ behavior: 'smooth' });
             }
         }
+
+        // Chatbot Demo Functionality
+        const chatbotKnowledge = {
+            'greetings': [
+                "Hello! I'm your IoT Device Identification Assistant. How can I help you today?",
+                "Hi there! I can help you with IoT device identification and analysis. What would you like to know?",
+                "Welcome! I'm here to assist you with IoT device classification and network traffic analysis."
+            ],
+            'capabilities': [
+                "I can help you identify IoT devices based on network traffic patterns. I support 9 device categories: baby_monitor, lights, motion_sensor, security_camera, smoke_detector, socket, thermostat, TV, and watch.",
+                "I can analyze network traffic features like packet sizes, HTTP requests, SSL certificates, and more to classify IoT devices with high accuracy.",
+                "I can provide insights about device behavior patterns, security implications, and network optimization for IoT devices."
+            ],
+            'device_info': {
+                'baby_monitor': "Baby monitors typically show regular heartbeat patterns in network traffic, use specific ports, and have characteristic SSL certificate patterns.",
+                'lights': "Smart lights usually have low bandwidth usage, frequent small packets for status updates, and specific HTTP request patterns.",
+                'motion_sensor': "Motion sensors show burst traffic patterns when triggered, with specific inter-arrival times and packet size distributions.",
+                'security_camera': "Security cameras generate high bandwidth traffic, especially for video streaming, with specific SSL and HTTP patterns.",
+                'smoke_detector': "Smoke detectors have very low network activity, with occasional status updates and specific port usage patterns.",
+                'socket': "Smart sockets show power consumption patterns in their network traffic, with specific timing characteristics.",
+                'thermostat': "Thermostats have temperature-related network patterns, with regular status updates and specific timing intervals.",
+                'TV': "Smart TVs generate high bandwidth traffic for streaming, with specific HTTP and SSL patterns for content delivery.",
+                'watch': "Smart watches show intermittent connectivity patterns, with specific power management characteristics in network traffic."
+            },
+            'features': [
+                "Our model analyzes 297 network traffic features including packet sizes, HTTP patterns, SSL certificates, timing characteristics, and more.",
+                "Key features include bytes transferred, packet inter-arrival times, HTTP request/response patterns, SSL handshake characteristics, and TCP analysis.",
+                "The model uses ensemble learning with multiple XGBoost models for high accuracy in device classification."
+            ],
+            'security': [
+                "IoT device identification helps in network security by detecting unauthorized devices, monitoring device behavior, and identifying potential threats.",
+                "By analyzing traffic patterns, we can detect anomalies, unauthorized access attempts, and compromised IoT devices.",
+                "Device identification enables proper network segmentation, access control, and security policy enforcement."
+            ],
+            'numerical': [
+                "Our model analyzes 297 numerical features from network traffic including packet sizes, timing intervals, byte counts, HTTP patterns, SSL characteristics, and more.",
+                "Key numerical features include: bytes transferred (avg: 5,243), packet inter-arrival times, HTTP request/response sizes, SSL handshake durations, and TCP analysis metrics.",
+                "The model processes numerical data like packet counts, duration measurements, entropy calculations, statistical moments (mean, median, std dev), and frequency distributions."
+            ],
+            'dsx': [
+                "DSX likely refers to data science or experimental features. Our model uses advanced feature engineering with 297 numerical attributes for IoT device classification.",
+                "The dataset includes experimental features like HTTP entropy, SSL certificate analysis, packet timing distributions, and network protocol characteristics.",
+                "Our XGBoost ensemble model processes these experimental features to achieve high accuracy in device identification."
+            ],
+            'default': [
+                "I can help you with IoT device identification, network traffic analysis, device behavior patterns, and security implications. What specific aspect would you like to know about?",
+                "I'm specialized in IoT device classification using machine learning. I can explain device types, network patterns, security aspects, or help with technical questions. What would you like to know?",
+                "I can assist with IoT device identification, explain how our ML model works, discuss device categories, or help with network security questions. What's your specific question?"
+            ]
+        };
+
+        function getChatbotResponse(userMessage) {
+            userMessage = userMessage.toLowerCase().trim();
+            
+            // Greeting patterns
+            if (userMessage.includes('hello') || userMessage.includes('hi') || userMessage.includes('hey')) {
+                return chatbotKnowledge.greetings[Math.floor(Math.random() * chatbotKnowledge.greetings.length)];
+            }
+            
+            // Capability questions
+            if (userMessage.includes('what can you do') || userMessage.includes('capabilities') || userMessage.includes('help')) {
+                return chatbotKnowledge.capabilities[Math.floor(Math.random() * chatbotKnowledge.capabilities.length)];
+            }
+            
+            // Device-specific questions
+            const devices = ['baby_monitor', 'lights', 'motion_sensor', 'security_camera', 'smoke_detector', 'socket', 'thermostat', 'TV', 'watch'];
+            for (let device of devices) {
+                if (userMessage.includes(device.replace('_', ' ')) || userMessage.includes(device)) {
+                    return chatbotKnowledge.device_info[device];
+                }
+            }
+            
+            // Feature questions
+            if (userMessage.includes('features') || userMessage.includes('model') || userMessage.includes('algorithm')) {
+                return chatbotKnowledge.features[Math.floor(Math.random() * chatbotKnowledge.features.length)];
+            }
+            
+            // Security questions
+            if (userMessage.includes('security') || userMessage.includes('threat') || userMessage.includes('attack')) {
+                return chatbotKnowledge.security[Math.floor(Math.random() * chatbotKnowledge.security.length)];
+            }
+            
+            // Numerical questions
+            if (userMessage.includes('numerical') || userMessage.includes('numbers') || userMessage.includes('values')) {
+                return chatbotKnowledge.numerical[Math.floor(Math.random() * chatbotKnowledge.numerical.length)];
+            }
+            
+            // DSX questions
+            if (userMessage.includes('dsx')) {
+                return chatbotKnowledge.dsx[Math.floor(Math.random() * chatbotKnowledge.dsx.length)];
+            }
+            
+            // Default response
+            return chatbotKnowledge.default[Math.floor(Math.random() * chatbotKnowledge.default.length)];
+        }
+
+        function toggleChatbot() {
+            const chatbot = document.getElementById('chatbot');
+            if (chatbot.style.display === 'none' || chatbot.style.display === '') {
+                chatbot.style.display = 'block';
+            } else {
+                chatbot.style.display = 'none';
+            }
+        }
+
+        function sendChatMessage() {
+            const input = document.getElementById('chatInput');
+            const message = input.value.trim();
+            if (!message) return;
+
+            // Add user message
+            addChatMessage(message, 'user');
+            input.value = '';
+
+            // Get bot response
+            const response = getChatbotResponse(message);
+            setTimeout(() => {
+                addChatMessage(response, 'bot');
+            }, 500);
+        }
+
+        function addChatMessage(message, sender) {
+            const chatMessages = document.getElementById('chatMessages');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `chat-message ${sender}`;
+            messageDiv.textContent = message;
+            chatMessages.appendChild(messageDiv);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+        // Initialize chatbot
+        document.addEventListener('DOMContentLoaded', function() {
+            // Add initial bot message
+            setTimeout(() => {
+                addChatMessage("Hello! I'm your IoT Device Identification Assistant. How can I help you today?", 'bot');
+            }, 1000);
+        });
     </script>
 </body>
 </html>
