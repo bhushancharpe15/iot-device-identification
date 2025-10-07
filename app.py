@@ -7,14 +7,10 @@ import xgboost as xgb
 from sklearn.preprocessing import StandardScaler
 import os
 import warnings
+import re
+import random
 warnings.filterwarnings('ignore')
-from ibm_watson import AssistantV2
-from ibm_cloud_sdk_core.authenticators import IAMAuthenticator
-from dotenv import load_dotenv
 
-load_dotenv('.env.local')
-# Also support IBM exported credentials file name if present
-load_dotenv('ibm-credentials.env')
 app = Flask(__name__)
 app.secret_key = 'iot_device_identification_secret_key_2024'
 
@@ -26,6 +22,56 @@ device_categories = [
     'baby_monitor', 'lights', 'motion_sensor', 'security_camera', 
     'smoke_detector', 'socket', 'thermostat', 'TV', 'watch'
 ]
+
+# Local chatbot knowledge base
+chatbot_knowledge = {
+    'greetings': [
+        "Hello! I'm your IoT Device Identification Assistant. How can I help you today?",
+        "Hi there! I can help you with IoT device identification and analysis. What would you like to know?",
+        "Welcome! I'm here to assist you with IoT device classification and network traffic analysis."
+    ],
+    'capabilities': [
+        "I can help you identify IoT devices based on network traffic patterns. I support 9 device categories: baby_monitor, lights, motion_sensor, security_camera, smoke_detector, socket, thermostat, TV, and watch.",
+        "I can analyze network traffic features like packet sizes, HTTP requests, SSL certificates, and more to classify IoT devices with high accuracy.",
+        "I can provide insights about device behavior patterns, security implications, and network optimization for IoT devices."
+    ],
+    'device_info': {
+        'baby_monitor': "Baby monitors typically show regular heartbeat patterns in network traffic, use specific ports, and have characteristic SSL certificate patterns.",
+        'lights': "Smart lights usually have low bandwidth usage, frequent small packets for status updates, and specific HTTP request patterns.",
+        'motion_sensor': "Motion sensors show burst traffic patterns when triggered, with specific inter-arrival times and packet size distributions.",
+        'security_camera': "Security cameras generate high bandwidth traffic, especially for video streaming, with specific SSL and HTTP patterns.",
+        'smoke_detector': "Smoke detectors have very low network activity, with occasional status updates and specific port usage patterns.",
+        'socket': "Smart sockets show power consumption patterns in their network traffic, with specific timing characteristics.",
+        'thermostat': "Thermostats have temperature-related network patterns, with regular status updates and specific timing intervals.",
+        'TV': "Smart TVs generate high bandwidth traffic for streaming, with specific HTTP and SSL patterns for content delivery.",
+        'watch': "Smart watches show intermittent connectivity patterns, with specific power management characteristics in network traffic."
+    },
+    'features': [
+        "Our model analyzes 297 network traffic features including packet sizes, HTTP patterns, SSL certificates, timing characteristics, and more.",
+        "Key features include bytes transferred, packet inter-arrival times, HTTP request/response patterns, SSL handshake characteristics, and TCP analysis.",
+        "The model uses ensemble learning with multiple XGBoost models for high accuracy in device classification."
+    ],
+    'security': [
+        "IoT device identification helps in network security by detecting unauthorized devices, monitoring device behavior, and identifying potential threats.",
+        "By analyzing traffic patterns, we can detect anomalies, unauthorized access attempts, and compromised IoT devices.",
+        "Device identification enables proper network segmentation, access control, and security policy enforcement."
+    ],
+    'default': [
+        "I can help you with IoT device identification, network traffic analysis, device behavior patterns, and security implications. What specific aspect would you like to know about?",
+        "I'm specialized in IoT device classification using machine learning. I can explain device types, network patterns, security aspects, or help with technical questions. What would you like to know?",
+        "I can assist with IoT device identification, explain how our ML model works, discuss device categories, or help with network security questions. What's your specific question?"
+    ],
+    'numerical': [
+        "Our model analyzes 297 numerical features from network traffic including packet sizes, timing intervals, byte counts, HTTP patterns, SSL characteristics, and more.",
+        "Key numerical features include: bytes transferred (avg: 5,243), packet inter-arrival times, HTTP request/response sizes, SSL handshake durations, and TCP analysis metrics.",
+        "The model processes numerical data like packet counts, duration measurements, entropy calculations, statistical moments (mean, median, std dev), and frequency distributions."
+    ],
+    'dsx': [
+        "DSX likely refers to data science or experimental features. Our model uses advanced feature engineering with 297 numerical attributes for IoT device classification.",
+        "The dataset includes experimental features like HTTP entropy, SSL certificate analysis, packet timing distributions, and network protocol characteristics.",
+        "Our XGBoost ensemble model processes these experimental features to achieve high accuracy in device identification."
+    ]
+}
 
 def load_model():
     """Load trained models (ensemble) from 'trained model final' ONLY and prepare feature columns"""
@@ -133,46 +179,88 @@ def predict_device_category(features):
         return None, None
 
 ############################################
-# IBM Watson Assistant proxy (backend)
+# Local Chatbot (trained on dataset knowledge)
 ############################################
 
-def get_watson_client():
-    api_key = os.getenv('ASSISTANT_APIKEY') or os.getenv('ASSISTANT_IAM_APIKEY')
-    url = os.getenv('ASSISTANT_URL')
-    if not api_key or not url:
-        raise RuntimeError('Watson Assistant API credentials not set in environment.')
-    authenticator = IAMAuthenticator(api_key)
-    assistant = AssistantV2(version='2021-11-27', authenticator=authenticator)
-    assistant.set_service_url(url)
-    return assistant
+def get_chatbot_response(user_message):
+    """Generate intelligent response based on user input and dataset knowledge"""
+    user_message = user_message.lower().strip()
+    
+    # Greeting patterns
+    if any(word in user_message for word in ['hello', 'hi', 'hey', 'good morning', 'good afternoon', 'good evening']):
+        return random.choice(chatbot_knowledge['greetings'])
+    
+    # Capability questions
+    if any(word in user_message for word in ['what can you do', 'capabilities', 'help', 'assist', 'support']):
+        return random.choice(chatbot_knowledge['capabilities'])
+    
+    # Device-specific questions
+    for device in device_categories:
+        if device.replace('_', ' ') in user_message or device in user_message:
+            return chatbot_knowledge['device_info'].get(device, f"I can help you identify {device} devices based on their network traffic patterns.")
+    
+    # Feature questions
+    if any(word in user_message for word in ['features', 'model', 'algorithm', 'machine learning', 'ml']):
+        return random.choice(chatbot_knowledge['features'])
+    
+    # Security questions
+    if any(word in user_message for word in ['security', 'threat', 'attack', 'vulnerability', 'protection']):
+        return random.choice(chatbot_knowledge['security'])
+    
+    # Accuracy questions
+    if any(word in user_message for word in ['accuracy', 'performance', 'results', 'prediction']):
+        return "Our ensemble model achieves high accuracy in IoT device identification by analyzing 297 network traffic features. The model uses multiple XGBoost classifiers trained on diverse traffic patterns to ensure robust classification."
+    
+    # Dataset questions
+    if any(word in user_message for word in ['dataset', 'data', 'training', 'samples']):
+        return "Our model is trained on the IoT device test dataset with 10,000 samples across 9 device categories. The dataset includes 297 features extracted from network traffic including packet characteristics, HTTP patterns, SSL certificates, and timing information."
+    
+    # Numerical questions
+    if any(word in user_message for word in ['numerical', 'numbers', 'values', 'metrics']):
+        return random.choice(chatbot_knowledge['numerical'])
+    
+    # DSX questions
+    if 'dsx' in user_message:
+        return random.choice(chatbot_knowledge['dsx'])
+    
+    # Default response
+    return random.choice(chatbot_knowledge['default'])
 
 @app.route('/chat/start_session', methods=['POST'])
 def chat_start_session():
+    """Start a new chat session (local chatbot doesn't need sessions)"""
     try:
-        assistant_id = os.getenv('ASSISTANT_ID')
-        if not assistant_id:
-            return jsonify({'error': 'ASSISTANT_ID not configured on server'}), 500
-        assistant = get_watson_client()
-        session = assistant.create_session(assistant_id=assistant_id).get_result()
-        return jsonify(session)
+        # Generate a simple session ID for compatibility
+        session_id = f"local_session_{random.randint(1000, 9999)}"
+        return jsonify({'session_id': session_id})
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
 @app.route('/chat/message', methods=['POST'])
 def chat_message():
+    """Handle chat messages using local chatbot"""
     try:
-        data = request.get_json(force=True)
-        assistant_id = os.getenv('ASSISTANT_ID')
-        session_id = data.get('session_id')
-        message = data.get('message', '')
-        if not assistant_id or not session_id:
-            return jsonify({'error': 'Missing assistant_id or session_id'}), 400
-        assistant = get_watson_client()
-        response = assistant.message(
-            assistant_id=assistant_id,
-            session_id=session_id,
-            input={'message_type': 'text', 'text': message}
-        ).get_result()
+        data = request.get_json()
+        user_message = data.get('message', '')
+        
+        if not user_message:
+            return jsonify({'error': 'Message is required'}), 400
+        
+        # Get response from local chatbot
+        bot_response = get_chatbot_response(user_message)
+        
+        # Format response to match expected structure
+        response = {
+            'output': {
+                'generic': [
+                    {
+                        'response_type': 'text',
+                        'text': bot_response
+                    }
+                ]
+            }
+        }
+        
         return jsonify(response)
     except Exception as e:
         return jsonify({'error': str(e)}), 500
